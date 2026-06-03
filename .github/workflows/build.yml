@@ -22,9 +22,9 @@ jobs:
           ndk-version: r25c
           add-to-path: true
       - name: Fix line endings
-        run: sed -i 's/\r//' gradlew
+        run: find . -name "gradlew" -exec sed -i 's/\r//' {} \;
       - name: Grant execute permission
-        run: chmod +x gradlew
+        run: find . -name "gradlew" -exec chmod +x {} \;
       - name: Build APK
         run: ./gradlew assembleDebug
       - uses: actions/upload-artifact@v4
