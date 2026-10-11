@@ -1,0 +1,30 @@
+name: probe-vulkan
+on:
+  push:
+    branches: [server-vulkan]
+    paths: [".github/workflows/probe-vulkan.yml"]
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Instalar Vulkan SDK
+        run: |
+          V=$(curl -s https://vulkan.lunarg.com/sdk/latest/linux.txt)
+          echo "version=$V"
+          mkdir vulkan_sdk
+          curl -sL "https://sdk.lunarg.com/sdk/download/$V/linux/vulkan_sdk.tar.xz" | tar -xJ -C vulkan_sdk --strip-components=1
+          ls vulkan_sdk
+      - name: Probar glslc
+        run: |
+          source ./vulkan_sdk/setup-env.sh
+          which glslc
+          glslc --version
+          ls $VULKAN_SDK/include/vulkan | head -5
+          ls $VULKAN_SDK/lib | grep -i vulkan | head -3
+          cat > c.comp <<EOS
+          #version 450
+          #extension GL_KHR_cooperative_matrix : require
+          layout(local_size_x=1) in;
+          void main(){}
+          EOS
+          glslc --target-env=vulkan1.3 -fshader-stage=compute c.comp -o c.spv && echo COOPMAT_OK
